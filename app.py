@@ -43,13 +43,13 @@ if file1 and file2:
 {text2}
 """
 
-                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
-
-                headers = {"Content-Type": "application/json"}
-                if api_key.startswith("AQ"):
-                    headers["Authorization"] = f"Bearer {api_key}"
-                else:
-                    url = f"{url}?key={api_key}"
+                # เปลี่ยนไปใช้ endpoint แบบ v1alpha เพื่อรองรับ OAuth Token (AQ...) โดยเฉพาะ
+                url = "https://generativelanguage.googleapis.com/v1alpha/models/gemini-2.5-flash:generateContent"
+                
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}"
+                }
 
                 payload = {
                     "contents": [{
