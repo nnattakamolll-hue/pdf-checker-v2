@@ -5,22 +5,22 @@ import json
 
 st.set_page_config(page_title="PDF Verifier", layout="wide")
 
-st.title("🔍 ระบบอัปโหลดและตรวจสอบเอกสาร PDF ด้วย AI")
-st.write("อัปโหลดไฟล์ PDF 2 ไฟล์เพื่อเปรียบเทียบเนื้อหาและตรวจสอบความถูกต้อง")
+st.title("🔍 ระบบเปรียบเทียบรายละเอียดสินค้า PDF ด้วย AI")
+st.write("อัปโหลดไฟล์ PDF 2 ไฟล์เพื่อเปรียบเทียบข้อมูลสินค้าว่าตรงกันหรือไม่")
 
 col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("ไฟล์ที่ 1 (ต้นฉบับ)")
-    file1 = st.file_uploader("เลือกไฟล์ PDF ไฟล์ที่ 1", type=["pdf"], key="file1")
+    file1 = st.file_uploader("เลือกไฟล์ PDF ที่ 1", type=["pdf"], key="file1")
 
 with col2:
-    st.subheader("ไฟล์ที่ 2 (เอกสารที่ต้องการตรวจสอบ)")
-    file2 = st.file_uploader("เลือกไฟล์ PDF ไฟล์ที่ 2", type=["pdf"], key="file2")
+    st.subheader("ไฟล์ที่ 2 (ตรวจสอบ)")
+    file2 = st.file_uploader("เลือกไฟล์ PDF ที่ 2", type=["pdf"], key="file2")
 
 if file1 and file2:
-    if st.button("🚀 เริ่มเปรียบเทียบและตรวจสอบข้อมูล", type="primary"):
-        with st.spinner("กำลังอ่านและวิเคราะห์เอกสาร..."):
+    if st.button("🚀 เริ่มเปรียบเทียบรายละเอียด", type="primary"):
+        with st.spinner("กำลังประมวลผล..."):
             try:
                 reader1 = pypdf.PdfReader(file1)
                 text1 = "".join([page.extract_text() for page in reader1.pages])
@@ -31,10 +31,10 @@ if file1 and file2:
                 api_key = st.secrets.get("GEMINI_API_KEY", "")
 
                 prompt = f"""
-คุณเป็นผู้ตรวจสอบเอกสารระดับมืออาชีพ กรุณาเปรียบเทียบข้อมูลในเอกสาร 2 ชุดนี้อย่างละเอียด:
-1. สรุปภาพรวมว่าเนื้อหาตรงกัน ขัดแย้ง หรือมีข้อมูลผิดเพี้ยนไปจากเดิมหรือไม่
-2. ระบุรายละเอียดจุดที่ตรงกันและจุดที่แตกต่างกันอย่างชัดเจน
-3. หากมีข้อมูลตัวเลข ชื่อ หรือเงื่อนไขที่ไม่ตรงกัน ให้แจ้งเตือนทันที
+คุณเป็นผู้ตรวจสอบเอกสารสินค้ามืออาชีพ กรุณาเปรียบเทียบข้อมูลในเอกสาร 2 ชุดนี้อย่างละเอียด:
+1. ตรวจสอบว่ารายละเอียดสินค้า รหัสรุ่น สเปค และเงื่อนไขต่างๆ ตรงกันหรือไม่
+2. จัดทำตารางสรุปจุดที่ตรงกันและจุดที่แตกต่างกันให้ชัดเจน
+3. หากมีข้อมูลที่ขัดแย้งกัน ให้แจ้งเตือนทันที
 
 --- เอกสารชุดที่ 1 ---
 {text1}
@@ -43,7 +43,7 @@ if file1 and file2:
 {text2}
 """
 
-                # เปลี่ยนไปใช้ endpoint แบบ v1alpha เพื่อรองรับ OAuth Token (AQ...) โดยเฉพาะ
+                # ใช้ endpoint v1alpha และส่งรหัส AQ... แบบ Bearer Token
                 url = "https://generativelanguage.googleapis.com/v1alpha/models/gemini-2.5-flash:generateContent"
                 
                 headers = {
@@ -63,7 +63,7 @@ if file1 and file2:
                 if response.status_code == 200:
                     try:
                         ai_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                        st.success("วิเคราะห์เสร็จเรียบร้อย!")
+                        st.success("เปรียบเทียบสำเร็จ!")
                         st.markdown("### 📊 ผลการตรวจสอบ:")
                         st.markdown(ai_text)
                     except Exception:
@@ -72,6 +72,6 @@ if file1 and file2:
                     st.error(f"API Error ({response.status_code}): {res_data}")
 
             except Exception as e:
-                st.error(f"เกิดข้อผิดพลาดในการประมวลผล: {e}")
+                st.error(f"เกิดข้อผิดพลาด: {e}")
 else:
-    st.info("💡 กรุณาอัปโหลดไฟล์ PDF ทั้ง 2 ไฟล์ให้ครบถ้วนเพื่อเริ่มใช้งาน")
+    st.info("💡 กรุณาอัปโหลดไฟล์ PDF ทั้ง 2 ไฟล์เพื่อเริ่มใช้งาน")
